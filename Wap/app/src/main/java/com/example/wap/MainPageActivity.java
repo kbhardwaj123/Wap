@@ -16,6 +16,10 @@ public class MainPageActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main_page);
 
         Button logout=findViewById(R.id.logout);
+        Button mfindUser=findViewById(R.id.findUser);
+        mfindUser.setOnClickListener((v) -> {
+            startActivity(new Intent(getApplicationContext(),FindUserActivity.class));
+        });
         logout.setOnClickListener((v)->{
             FirebaseAuth.getInstance().signOut();
             Intent intent = new Intent(getApplicationContext(),MainActivity.class);
