@@ -27,6 +27,8 @@ public class MainActivity extends AppCompatActivity {
     private Button send;
 
     private PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallbacks;
+    String mVerificationId;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,7 +42,12 @@ public class MainActivity extends AppCompatActivity {
         phoneNo = findViewById(R.id.phoneNumber);
         code = findViewById(R.id.code);
         send = findViewById(R.id.send);
-        send.setOnClickListener((v) -> startPhoneVerification());
+        send.setOnClickListener((v) -> {
+            if(mVerificationId !=null) {
+                verifyPhoneNoWithCode();
+            } else
+                startPhoneVerification();
+        });
 
         mCallbacks = new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
             @Override
@@ -56,9 +63,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCodeSent(@NonNull String s, @NonNull PhoneAuthProvider.ForceResendingToken forceResendingToken) {
                 super.onCodeSent(s, forceResendingToken);
+                mVerificationId = s;
+                send.setText("Verify Code");
             }
         };
 
+    }
+
+    private void  verifyPhoneNoWithCode() {
+        PhoneAuthCredential credential = PhoneAuthProvider.getCredential(mVerificationId,code.getText().toString());
+        signInWithPhoneAuthCredential(credential);
     }
 
     private void signInWithPhoneAuthCredential(PhoneAuthCredential phoneAuthCredential) {
