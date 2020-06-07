@@ -1,21 +1,42 @@
 package com.example.wap;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import android.Manifest;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.widget.Button;
 
+import com.example.wap.Chat.ChatListAdapter;
+import com.example.wap.Chat.ChatObject;
+import com.example.wap.User.UserListAdapter;
+import com.example.wap.User.UserObject;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
 
 public class MainPageActivity extends AppCompatActivity {
 
+    private RecyclerView mChatList;
+    private RecyclerView.Adapter mChatListAdapter;
+    private RecyclerView.LayoutManager mChatListLayoutManager;
+
+    ArrayList<ChatObject> chatList;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
 
+        chatList = new ArrayList<>();
         Button logout=findViewById(R.id.logout);
         Button mfindUser=findViewById(R.id.findUser);
         mfindUser.setOnClickListener((v) -> {
@@ -30,7 +51,38 @@ public class MainPageActivity extends AppCompatActivity {
             return;
         });
 
+        getUserChatList();
+        initRecyclerView();
         getPermission();
+    }
+
+    private void getUserChatList() {
+        DatabaseReference mUserChatDB = FirebaseDatabase.getInstance().getReference()
+                .child("user").child(FirebaseAuth.getInstance().getUid())
+                .child("chat");
+        mUserChatDB.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()) {
+                    for(DataSnapshot childSnapshot: dataSnapshot.getChildren()) {
+                        ChatObject mChat = new ChatObject(childSnapshot.getKey());
+                        boolean exists = false;
+                        for(ChatObject mCHatIt: chatList) {
+                            if(mCHatIt.getChatId().equals(mChat.getChatId()))
+                                exists = true;
+                        }
+                        if(exists) continue;
+                        chatList.add(mChat);
+                        mChatListAdapter.notifyDataSetChanged();
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private void getPermission() {
@@ -40,5 +92,19 @@ public class MainPageActivity extends AppCompatActivity {
                     Manifest.permission.READ_CONTACTS,
             },1);
         }
+    }
+
+    private void initRecyclerView() {
+        mChatList = findViewById(R.id.chatList);
+        mChatList.setNestedScrollingEnabled(false);
+        mChatList.setHasFixedSize(false);
+        mChatListLayoutManager = new LinearLayoutManager(
+                getApplicationContext(),
+                RecyclerView.VERTICAL,
+                false
+        );
+        mChatList.setLayoutManager(mChatListLayoutManager);
+        mChatListAdapter = new ChatListAdapter(chatList);
+        mChatList.setAdapter(mChatListAdapter);
     }
 }
