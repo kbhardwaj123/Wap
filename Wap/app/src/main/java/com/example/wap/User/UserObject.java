@@ -1,10 +1,11 @@
-package com.example.wap;
+package com.example.wap.User;
 
 public class UserObject {
 
-    private String name,phone;
+    private String name,phone,Uid;
 
-    public UserObject(String name,String phone) {
+    public UserObject(String Uid,String name,String phone) {
+        this.Uid = Uid;
         this.name = name;
         this.phone = phone;
     }
@@ -15,6 +16,7 @@ public class UserObject {
     public String getName() {
         return name;
     }
+    public String getUid() {  return Uid; }
 
     public void setName(String name) {
         this.name = name;
