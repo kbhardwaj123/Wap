@@ -1,15 +1,15 @@
 package com.example.wap.Chat;
 
+import android.content.Intent;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.example.wap.ChatActivity;
 import com.example.wap.R;
-import com.example.wap.Chat.ChatObject;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 
@@ -18,10 +18,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class ChatListAdapter extends
         RecyclerView.Adapter<ChatListAdapter.ChatListViewHolder>{
-    ArrayList<ChatObject> ChatList;
+    ArrayList<ChatObject> chatList;
 
-    public ChatListAdapter(ArrayList<ChatObject> ChatList) {
-        this.ChatList = ChatList;
+    public ChatListAdapter(ArrayList<ChatObject> chatList) {
+        this.chatList = chatList;
     }
 
     @NonNull
@@ -44,16 +44,20 @@ public class ChatListAdapter extends
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ChatListAdapter.ChatListViewHolder holder, int position) {
-        holder.mTitle.setText(ChatList.get(position).getChatId());
+    public void onBindViewHolder(@NonNull final ChatListAdapter.ChatListViewHolder holder, int position) {
+        holder.mTitle.setText(chatList.get(position).getChatId());
         holder.mLayout.setOnClickListener((view -> {
-
+            Intent intent = new Intent(view.getContext(), ChatActivity.class);
+            Bundle bundle = new Bundle();
+            bundle.putString("chatID",chatList.get(holder.getAdapterPosition()).getChatId());
+            intent.putExtras(bundle);
+            view.getContext().startActivity(intent);
         }));
     }
 
     @Override
     public int getItemCount() {
-        return ChatList.size();
+        return chatList.size();
     }
 
     public class ChatListViewHolder extends RecyclerView.ViewHolder {
