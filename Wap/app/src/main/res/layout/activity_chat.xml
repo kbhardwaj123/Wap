@@ -20,17 +20,38 @@
         android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:id="@+id/sendLayout">
-        <EditText
-            android:layout_weight="0.8"
-            android:layout_width="0dp"
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/message" />
-        <Button
-            android:layout_weight="0.2"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:id="@+id/send"/>
+            android:id="@+id/mediaList">
+
+        </androidx.recyclerview.widget.RecyclerView>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <EditText
+                android:layout_weight="0.6"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/messageDialogue" />
+            <Button
+                android:layout_weight="0.2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="add"
+                android:id="@+id/addMedia"/>
+
+            <Button
+                android:layout_weight="0.2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="send"
+                android:id="@+id/send"/>
+        </LinearLayout>
     </LinearLayout>
 </RelativeLayout>

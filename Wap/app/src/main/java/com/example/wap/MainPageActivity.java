@@ -15,12 +15,14 @@ import com.example.wap.Chat.ChatListAdapter;
 import com.example.wap.Chat.ChatObject;
 import com.example.wap.User.UserListAdapter;
 import com.example.wap.User.UserObject;
+import com.facebook.drawee.backends.pipeline.Fresco;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.onesignal.OneSignal;
 
 import java.util.ArrayList;
 
@@ -36,6 +38,19 @@ public class MainPageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_page);
 
+        Fresco.initialize(this);
+        OneSignal.startInit(this).init();
+        OneSignal.setSubscription(true);
+        OneSignal.idsAvailable(new OneSignal.IdsAvailableHandler() {
+            @Override
+            public void idsAvailable(String userId, String registrationId) {
+                FirebaseDatabase.getInstance().getReference().child("user")
+                        .child(FirebaseAuth.getInstance().getUid()).child("notificationKey")
+                        .setValue(userId);
+            }
+        });
+        OneSignal.setInFocusDisplaying(OneSignal.OSInFocusDisplayOption.Notification);
+
         chatList = new ArrayList<>();
         Button logout=findViewById(R.id.logout);
         Button mfindUser=findViewById(R.id.findUser);
@@ -43,6 +58,7 @@ public class MainPageActivity extends AppCompatActivity {
             startActivity(new Intent(getApplicationContext(),FindUserActivity.class));
         });
         logout.setOnClickListener((v)->{
+            OneSignal.setSubscription(false);
             FirebaseAuth.getInstance().signOut();
             Intent intent = new Intent(getApplicationContext(), LoginActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -73,9 +89,66 @@ public class MainPageActivity extends AppCompatActivity {
                         }
                         if(exists) continue;
                         chatList.add(mChat);
-                        mChatListAdapter.notifyDataSetChanged();
+                        getChatData(mChat.getChatId());
                     }
                 }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void getChatData(String chatId) {
+        DatabaseReference mChatDB = FirebaseDatabase.getInstance().getReference()
+                .child("chat").child(chatId).child("info");
+        mChatDB.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()) {
+                    String chatId = "";
+                    if(dataSnapshot.child("id").getValue() != null)
+                        chatId = dataSnapshot.child("id").getValue().toString(); //Async
+
+                    for(DataSnapshot userSnapshot: dataSnapshot.child("users").getChildren()) {
+                        for(ChatObject mCHatIt: chatList) {
+                            if(mCHatIt.getChatId().equals(chatId)) {
+                                UserObject mUser = new UserObject(userSnapshot.getKey());
+                                mCHatIt.addUserToArrayList(mUser);
+                                getUserData(mUser);
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void getUserData(UserObject mUser) {
+        DatabaseReference mUserDB = FirebaseDatabase.getInstance().getReference()
+                .child("user").child(mUser.getUid());
+        mUserDB.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                UserObject mUser = new UserObject(dataSnapshot.getKey());
+                if(dataSnapshot.child("notificationKey").getValue() != null) {
+                    mUser.setNotifKey(dataSnapshot.child("notificationKey").getValue().toString());
+                }
+                for(ChatObject mCHat: chatList) {
+                    for(UserObject mUserIt: mCHat.getUserObjectList()) {
+                        if(mUserIt.getUid().equals(mUser.getUid())) {
+                            mUserIt.setNotifKey(mUser.getNotifKey());
+                        }
+                    }
+                }
+                mChatListAdapter.notifyDataSetChanged();
             }
 
             @Override

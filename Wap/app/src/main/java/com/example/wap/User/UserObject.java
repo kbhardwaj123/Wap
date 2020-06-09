@@ -2,12 +2,16 @@ package com.example.wap.User;
 
 public class UserObject {
 
-    private String name,phone,Uid;
+    private String name,phone,Uid,notifKey;
 
     public UserObject(String Uid,String name,String phone) {
         this.Uid = Uid;
         this.name = name;
         this.phone = phone;
+    }
+
+    public UserObject(String Uid) {
+        this.Uid = Uid;
     }
 
     public String getPhone() {
@@ -20,5 +24,13 @@ public class UserObject {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getNotifKey() {
+        return notifKey;
+    }
+
+    public void setNotifKey(String notifKey) {
+        this.notifKey = notifKey;
     }
 }
