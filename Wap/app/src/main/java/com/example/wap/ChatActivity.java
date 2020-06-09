@@ -96,13 +96,18 @@ public class ChatActivity extends AppCompatActivity {
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 if(dataSnapshot.exists()) {
                     String text = "",creatorId="";
+                    ArrayList<String> mediaUrlList = new ArrayList<>();
                     if(dataSnapshot.child("text").getValue()!=null) {
                         text = dataSnapshot.child("text").getValue().toString();
                     }
                     if(dataSnapshot.child("creator").getValue()!=null) {
                         creatorId = dataSnapshot.child("creator").getValue().toString();
                     }
-                    MessageObject mMessage = new MessageObject(dataSnapshot.getKey(),creatorId,text);
+                    if(dataSnapshot.child("media").getChildrenCount()>0) {
+                        for(DataSnapshot mediaSnapshot: dataSnapshot.child("media").getChildren())
+                            mediaUrlList.add(mediaSnapshot.getValue().toString());
+                    }
+                    MessageObject mMessage = new MessageObject(dataSnapshot.getKey(),creatorId,text,mediaUrlList);
                     messageList.add(mMessage);
                     mChatLayoutManager.scrollToPosition(messageList.size()-1);
                     mChatAdapter.notifyDataSetChanged();
