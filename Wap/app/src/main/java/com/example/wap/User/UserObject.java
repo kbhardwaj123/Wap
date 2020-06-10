@@ -1,6 +1,8 @@
 package com.example.wap.User;
 
-public class UserObject {
+import java.io.Serializable;
+
+public class UserObject implements Serializable {
 
     private String name,phone,Uid,notifKey;
 

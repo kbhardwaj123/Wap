@@ -2,9 +2,10 @@ package com.example.wap.Chat;
 
 import com.example.wap.User.UserObject;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class ChatObject {
+public class ChatObject implements Serializable {
     private String chatId;
     private ArrayList<UserObject> userObjectList = new ArrayList<>();
 
