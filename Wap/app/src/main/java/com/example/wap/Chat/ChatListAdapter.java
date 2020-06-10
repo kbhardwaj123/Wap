@@ -48,9 +48,7 @@ public class ChatListAdapter extends
         holder.mTitle.setText(chatList.get(position).getChatId());
         holder.mLayout.setOnClickListener((view -> {
             Intent intent = new Intent(view.getContext(), ChatActivity.class);
-            Bundle bundle = new Bundle();
-            bundle.putString("chatID",chatList.get(holder.getAdapterPosition()).getChatId());
-            intent.putExtras(bundle);
+            intent.putExtra("chatObject",chatList.get(holder.getAdapterPosition()));
             view.getContext().startActivity(intent);
         }));
     }
