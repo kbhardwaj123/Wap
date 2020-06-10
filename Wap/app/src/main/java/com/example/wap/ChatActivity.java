@@ -12,9 +12,12 @@ import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.example.wap.Chat.ChatObject;
 import com.example.wap.Chat.MediaAdapter;
 import com.example.wap.Chat.MessageAdapter;
 import com.example.wap.Chat.MessageObject;
+import com.example.wap.User.UserObject;
+import com.example.wap.Utils.SendNotification;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.ChildEventListener;
@@ -36,7 +39,7 @@ public class ChatActivity extends AppCompatActivity {
     private RecyclerView.LayoutManager mChatLayoutManager, mMediaLayoutManager;
 
     ArrayList<MessageObject> messageList;
-    String chatID;
+    ChatObject mChatObject;
 
     DatabaseReference mChatDB;
     EditText mMessage;
@@ -45,10 +48,9 @@ public class ChatActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-
-        chatID = getIntent().getExtras().getString("chatID");
+        mChatObject = (ChatObject) getIntent().getSerializableExtra("chatObject");
         mChatDB = FirebaseDatabase.getInstance().getReference().child("chat")
-                .child(chatID);
+                .child(mChatObject.getChatId()).child("messages");
 
         Button mSend = findViewById(R.id.send);
         Button mAddMedia = findViewById(R.id.addMedia);
@@ -153,7 +155,7 @@ public class ChatActivity extends AppCompatActivity {
                     String mediaId = newMessageDB.child("media").push().getKey();
                     mediaIdList.add(mediaId);
                     final StorageReference filepath = FirebaseStorage.getInstance().getReference()
-                            .child("chat").child(chatID).child(messageId).child(mediaId);
+                            .child("chat").child(mChatObject.getChatId()).child(messageId).child(mediaId);
                     UploadTask uploadTask = filepath.putFile(Uri.parse(mediaURI));
                     uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
@@ -185,6 +187,16 @@ public class ChatActivity extends AppCompatActivity {
         mediaURIList.clear();
         mediaIdList.clear();
         mMediaAdapter.notifyDataSetChanged();
+        String message;
+        if(newMessage.get("text")!=null)
+            message = newMessage.get("text").toString();
+        else
+            message = "Sent Media";
+        for(UserObject mUser: mChatObject.getUserObjectList()) {
+            if(!mUser.getUid().equals(FirebaseAuth.getInstance().getUid())) {
+                new SendNotification(message,"New Message", mUser.getNotifKey());
+            }
+        }
     }
 
     private void initMessage() {
